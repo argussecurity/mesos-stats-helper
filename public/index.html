@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html ng-app="mesos-tool">
+
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+    <style>
+        table {
+            border: 1px solid #666;
+            width: 100%;
+        }
+
+        th {
+            background: #f8f8f8;
+            font-weight: bold;
+            padding: 2px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #EEEEEE;
+        }
+    </style>
+</head>
+
+<body>
+
+<div ng-controller="appCtrl">
+
+    <a href="" ng-click="loadData()"><h2>Refresh</h2></a>
+
+    <h1 ng-show="loading">Loading...</h1>
+
+    <h1 ng-show="error">Error occurred</h1>
+
+    <h2>Tasks</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Ports</th>
+            <th>Host</th>
+            <th>Allocated CPUs</th>
+            <th>Allocated Memory</th>
+        </tr>
+        <tr ng-repeat="task in status.tasks">
+            <td>{{task.name}}</td>
+            <td>
+                <span ng-repeat="port in task.resources2.ports">
+                    <a href="{{ 'http://' + slavesMap[task.slave_id].hostname + ':' + port }}">:{{port}}</a>
+                </span>
+            </td>
+            <td>{{slavesMap[task.slave_id].hostname}}</td>
+            <td>{{task.resources.cpus}}</td>
+            <td>{{task.resources.mem}}</td>
+        </tr>
+    </table>
+
+    <h2>Slaves</h2>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Hostname</th>
+            <th>Total CPUs</th>
+            <th>Allocated CPUs</th>
+            <th>(Free CPUs)</th>
+            <th>Total Memory</th>
+            <th>Allocated Memory</th>
+            <th>(Free Memory)</th>
+            <th>Attributes</th>
+        </tr>
+        <tr ng-repeat="slave in status.slaves">
+            <td>{{slave.id}}</td>
+            <td>{{slave.hostname}}</td>
+            <td>{{slave.resources.cpus}}</td>
+            <td>{{slave.resources2.allocated.cpus}}</td>
+            <td>{{slave.resources2.free.cpus}}</td>
+            <td>{{slave.resources.mem}}</td>
+            <td>{{slave.resources2.allocated.mem}}</td>
+            <td>{{slave.resources2.free.mem}}</td>
+            <td>{{slave.attributes}}</td>
+        </tr>
+    </table>
+
+</div>
+
+<script>
+    var mesosTool = angular.module('mesos-tool', []);
+    mesosTool.controller('appCtrl', function ($scope, $http) {
+
+        $scope.status = {slaves: [], tasks: []};
+
+        $scope.loadData = function () {
+            $scope.loading = true;
+            $scope.error = false;
+
+            $http.get('/api/status').success(function (status) {
+                $scope.status = status;
+
+                // slaveId -> slave
+                $scope.slavesMap = {};
+                status.slaves.forEach(function (slave) {
+                    $scope.slavesMap[slave.id] = slave;
+                });
+                $scope.loading = false;
+
+            }).error(function (err) {
+                console.log(err);
+                $scope.loading = false;
+                $scope.error = true;
+            });
+        };
+
+        $scope.loadData();
+
+    });
+</script>
+</body>
+
+</html>
