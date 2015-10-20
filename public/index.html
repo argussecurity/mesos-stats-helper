@@ -18,6 +18,10 @@
         tr:nth-child(even) {
             background-color: #EEEEEE;
         }
+
+        .marked {
+            background-color: yellow;
+        }
     </style>
 </head>
 
@@ -41,7 +45,7 @@
             <th>Allocated Memory</th>
         </tr>
         <tr ng-repeat="task in status.tasks">
-            <td>{{task.name}}</td>
+            <td ng-class="{'marked': checkedSlave == task.slave_id}">{{task.name}}</td>
             <td>
                 <span ng-repeat="port in task.resources2.ports">
                     <a href="{{ 'http://' + slavesMap[task.slave_id].hostname + ':' + port }}">:{{port}}</a>
@@ -67,7 +71,7 @@
             <th>Attributes</th>
         </tr>
         <tr ng-repeat="slave in status.slaves">
-            <td>{{slave.id}}</td>
+            <td><a href="" ng-click="checkSlave(slave)">{{slave.id}}</a></td>
             <td>{{slave.hostname}}</td>
             <td>{{slave.resources.cpus}}</td>
             <td>{{slave.resources2.allocated.cpus}}</td>
@@ -88,6 +92,7 @@
         $scope.status = {slaves: [], tasks: []};
 
         $scope.loadData = function () {
+            $scope.checkedSlave = null;
             $scope.loading = true;
             $scope.error = false;
 
@@ -106,6 +111,10 @@
                 $scope.loading = false;
                 $scope.error = true;
             });
+        };
+
+        $scope.checkSlave = function(slave) {
+            $scope.checkedSlave = slave.id;
         };
 
         $scope.loadData();
