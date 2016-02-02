@@ -2,6 +2,7 @@
 <html ng-app="mesos-tool">
 
 <head>
+    <title>Mesos Stats Helper</title>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
     <style>
         table {
@@ -38,14 +39,14 @@
     <h2>Tasks</h2>
     <table>
         <tr>
-            <th>Name</th>
+            <th><a href="#" ng-click="orderBy('name')">Name</a></th>
             <th>Ports</th>
-            <th>Host</th>
-            <th>Allocated CPUs</th>
-            <th>Allocated Memory</th>
+            <th><a href="#" ng-click="orderBy('slave_id')">Host</a></th>
+            <th><a href="#" ng-click="orderBy('resources.cpus')">Allocated CPUs</a></th>
+            <th><a href="#" ng-click="orderBy('resources.mem')">Allocated Memory</a></th>
         </tr>
-        <tr ng-repeat="task in status.tasks">
-            <td ng-class="{'marked': checkedSlave == task.slave_id}">{{task.name}}</td>
+        <tr ng-repeat="task in status.tasks | orderBy:orderByColumn:orderAscending">
+            <td ng-class="{'marked': checkedSlave == task.slave_id}"><a href="" ng-attr-title="{{task | json}}">{{task.name}}</a></td>
             <td>
                 <span ng-repeat="port in task.resources2.ports">
                     <a href="{{ 'http://' + slavesMap[task.slave_id].hostname + ':' + port }}">:{{port}}</a>
@@ -71,7 +72,7 @@
             <th>Attributes</th>
         </tr>
         <tr ng-repeat="slave in status.slaves">
-            <td><a href="" ng-click="checkSlave(slave)">{{slave.id}}</a></td>
+            <td><a href="" ng-click="checkSlave(slave)" ng-attr-title="{{slave | json}}">{{slave.id}}</a></td>
             <td>{{slave.hostname}}</td>
             <td>{{slave.resources.cpus}}</td>
             <td>{{slave.resources2.allocated.cpus}}</td>
@@ -89,6 +90,8 @@
     var mesosTool = angular.module('mesos-tool', []);
     mesosTool.controller('appCtrl', function ($scope, $http) {
 
+        $scope.orderByColumn = 'name';
+        $scope.orderAscending = true;
         $scope.status = {slaves: [], tasks: []};
 
         $scope.loadData = function () {
@@ -111,6 +114,14 @@
                 $scope.loading = false;
                 $scope.error = true;
             });
+        };
+
+        $scope.orderBy = function(column) {
+            if ($scope.orderByColumn == column) {
+                $scope.orderAscending = !$scope.orderAscending;
+            } else {
+                $scope.orderByColumn = column;
+            }
         };
 
         $scope.checkSlave = function(slave) {
