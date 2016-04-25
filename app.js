@@ -19,7 +19,7 @@ var MESOS_PORT = process.env['MASTER_PORT'] || '5050';
 
 app.get('/api/status', function(req, res) {
 
-  var statusEndpoint = 'http://' + MESOS_HOST + ':' + MESOS_PORT + '/master/state.json';
+  var statusEndpoint = 'http://' + MESOS_HOST + ':' + MESOS_PORT + '/master/state';
   console.log("Querying '%s'...", statusEndpoint);
   request(statusEndpoint, function (error, response, body) {
 
